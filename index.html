@@ -8,14 +8,15 @@
   var PREBID_TIMEOUT = 1000;
   var FAILSAFE_TIMEOUT = 3000;
 
-  var adsizes = [300, 250];
+  var adsizes1 = [[300, 250],[300, 600]];
+  var adsizes2 = [300, 600];
 
   var adUnits = [
     {
       code: 'test-div',
       mediaTypes: {
         banner: {
-          sizes: adsizes,
+          sizes: adsizes1,
         }
       },
       bids: [
@@ -23,6 +24,22 @@
           bidder: "eetaram",
           params: {
             placementId: '12345'
+          }
+        }
+      ]
+    },
+    {
+      code: 'test-div2',
+      mediaTypes: {
+        banner: {
+          sizes: adsizes2,
+        }
+      },
+      bids: [
+        {
+          bidder: "eetaram",
+          params: {
+            placementId: '123456'
           }
         }
       ]
@@ -42,7 +59,13 @@
   pbjs.que.push(function() {
     pbjs.addAdUnits(adUnits);
     pbjs.requestBids({
+      adUnitCodes: ['test-div'],
       bidsBackHandler: initAdserver,
+      timeout: PREBID_TIMEOUT
+    });
+    pbjs.requestBids({
+      adUnitCodes: ['test-div2'],
+      bidsBackHandler: renderPrebidAd,
       timeout: PREBID_TIMEOUT
     });
   });
@@ -57,13 +80,36 @@
       });
     });
   }
+
+  function renderPrebidAd() {
+    if (pbjs.initAdSet) return;
+    pbjs.initAdSet = true;
+    var params = pbjs.getAdserverTargetingForAdUnitCode("test-div2");
+    var apsframe=document.getElementById("test-div2");
+    var apsframeDoc = apsframe !== null ? apsframe.contentWindow.document : null;
+    if(params && params['hb_adid']) {
+      let w = window;
+      for (let i = 0; i < 10; i++) {
+        w = w.parent;
+        if (w.pbjs) {
+          try {
+            w.pbjs.renderAd(apsframeDoc, params['hb_adid']);
+            break;
+          } catch (e) {
+            continue;
+          }
+        }
+      }
+    }
+  }
   // in case PBJS doesn't load
   setTimeout(function() {
     initAdserver();
+    renderPrebidAd();
   }, FAILSAFE_TIMEOUT);
 
   googletag.cmd.push(function() {
-    googletag.defineSlot('/6355419/Travel/Europe/France/Paris', adsizes, 'test-div').addService(googletag.pubads());
+    googletag.defineSlot('/6355419/Travel/Europe/France/Paris', adsizes1, 'test-div').addService(googletag.pubads());
     googletag.pubads().enableSingleRequest();
     googletag.enableServices();
   });
@@ -78,6 +124,6 @@
     });
     </script>
   </div>
+  <iframe id='test-div2'></iframe>
 </body>
 </html>
-
