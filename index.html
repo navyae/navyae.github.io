@@ -1,8 +1,83 @@
 <html>
-    <head>
-    <script src="https://raw.githubusercontent.com/navyae/Prebid.js/feature/eetaram/build/dist/prebid.js"></script>
-    </head>
-    <body>
-    <div> Running Eetaram Module </div>
-    </body>
+<head>
+  <script async src="https://www.googletagservices.com/tag/js/gpt.js"></script>
+  <script async src="https://raw.githubusercontent.com/navyae/Prebid.js/feature/eetaram/build/dist/prebid.js"></script>
+
+
+  <script type="text/javascript">
+  var PREBID_TIMEOUT = 1000;
+  var FAILSAFE_TIMEOUT = 3000;
+
+  var adsizes = [300, 250];
+
+  var adUnits = [
+    {
+      code: 'test-div',
+      mediaTypes: {
+        banner: {
+          sizes: adsizes,
+        }
+      },
+      bids: [
+        {
+          bidder: "eetaram",
+          params: {
+            placementId: '12345'
+          }
+        }
+      ]
+    }
+  ]
+
+  // ======== DO NOT EDIT BELOW THIS LINE =========== //
+  var googletag = googletag || {};
+  googletag.cmd = googletag.cmd || [];
+  googletag.cmd.push(function() {
+    googletag.pubads().disableInitialLoad();
+  });
+
+  var pbjs = pbjs || {};
+  pbjs.que = pbjs.que || [];
+
+  pbjs.que.push(function() {
+    pbjs.addAdUnits(adUnits);
+    pbjs.requestBids({
+      bidsBackHandler: initAdserver,
+      timeout: PREBID_TIMEOUT
+    });
+  });
+
+  function initAdserver() {
+    if (pbjs.initAdserverSet) return;
+    pbjs.initAdserverSet = true;
+    googletag.cmd.push(function() {
+      pbjs.que.push(function() {
+        pbjs.setTargetingForGPTAsync();
+        googletag.pubads().refresh();
+      });
+    });
+  }
+  // in case PBJS doesn't load
+  setTimeout(function() {
+    initAdserver();
+  }, FAILSAFE_TIMEOUT);
+
+  googletag.cmd.push(function() {
+    googletag.defineSlot('/6355419/Travel/Europe/France/Paris', adsizes, 'test-div').addService(googletag.pubads());
+    googletag.pubads().enableSingleRequest();
+    googletag.enableServices();
+  });
+  </script>
+</head>
+<body>
+  <div> Running Eetaram Module </div>
+  <div id='test-div'>
+    <script type='text/javascript'>
+    googletag.cmd.push(function() {
+      googletag.display('test-div');
+    });
+    </script>
+  </div>
+</body>
 </html>
+
